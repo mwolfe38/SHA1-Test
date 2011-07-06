@@ -1,0 +1,4 @@
+*.o
+sha1
+sha_parts
+*.d

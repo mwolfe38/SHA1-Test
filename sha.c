@@ -31,18 +31,6 @@
  */
 void usage();
 
-char* byte_to_hex(char * in,int len) {
-	int j;
-	char * result;
-	result = (char*) malloc(sizeof(char) * (len * 2 + 1));
-	char hexval[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-	for(j = 0; j < len; j++){
-		result[j*2] = hexval[((in[j] >> 4) & 0xF)];
-		result[(j*2) + 1] = hexval[(in[j]) & 0x0F];
-	}
-	result[len * 2] = '\0';
-	return result;
-}
 /*
  *  main
  *

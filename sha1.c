@@ -35,7 +35,7 @@
 
 
 #include <stdio.h>
-
+#include <stdlib.h>
 
 /*
  * 32-bit integer manipulation macros (big endian)
@@ -359,42 +359,74 @@ int sha1_file( const char *path, unsigned char output[20] )
     return( 0 );
 }
 
+/**
+ * Converts sha1_context into a char array for serialization
+ */
+void serialize_context(sha1_context *ctx, unsigned char state[SHA_STATE_SIZE]) {
+	int mem_start = 0;
+	memcpy(&(ctx->total), state, sizeof(ctx->total));
+	mem_start = sizeof(ctx->total);
+	memcpy(&(ctx->state), &state + mem_start, sizeof(ctx->state));
+}
 
-int sha1_file_progressive(const char *path, int startByte, int totalBytes,
-		unsigned char init_state, unsigned char output[190], int * eof ) {
+/**
+ * Converts char array into a sha1_context
+ */
+void deserialize_context(unsigned char state[SHA_STATE_SIZE], sha1_context *ctx) {
+	int mem_start = 0;
+	memcpy(state, &(ctx->total), sizeof(ctx->total));
+	mem_start += sizeof(ctx->total);
+	memcpy(state + mem_start , &(ctx->state), sizeof(ctx->state));
+}
+char* byte_to_hex(char * in,int len) {
+	int j;
+	char * result;
+	result = (char*) malloc(sizeof(char) * (len * 2 + 1));
+	char hexval[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+	for(j = 0; j < len; j++){
+		result[j*2] = hexval[((in[j] >> 4) & 0xF)];
+		result[(j*2) + 1] = hexval[(in[j]) & 0x0F];
+	}
+	result[len * 2] = '\0';
+	return result;
+}
+
+int sha1_file_progressive(const char *path, int start_byte, int block_size,
+		unsigned char state[SHA_STATE_SIZE], int * bytes_processed ) {
 	FILE *f;
 	size_t n;
 	sha1_context ctx;
 	int bytes_read = 0;
 	unsigned char buf[1024];
 
+
 	if( ( f = fopen( path, "rb" ) ) == NULL )
 		return( 1 );
 
-	if (startByte == 0) {
+	if (start_byte == 0) {
 		sha1_starts( &ctx );
+	} else {
+		printf("fseeking to byte %d\n", start_byte);
+		deserialize_context(state, &ctx);
+		int seek_ret = fseek(f, start_byte, SEEK_SET);
+		if (seek_ret != 0) {
+			printf("there was an error tring to fseek. ERRNO: %d", seek_ret);
+		}
 	}
-
-	while( bytes_read < totalBytes && (( n = fread( buf, 1, sizeof( buf ), f ) ) > 0) ) {
+	int buf_size = (block_size - sizeof(buf)) > 0 ? sizeof(buf) : block_size;
+	while( bytes_read < block_size && (( n = fread( buf, 1, buf_size, f ) ) > 0) ) {
+		printf("Read %d bytes\n", n);
 		bytes_read += n;
 		sha1_update( &ctx, buf, n );
+		buf_size = (block_size - sizeof(buf)) > 0 ? sizeof(buf) : block_size;
 	}
+	printf("Context state: %s | Context Result: %s", byte_to_hex(ctx.state, sizeof(ctx.state)), byte_to_hex(ctx.total, 2));
+	*bytes_processed = n;
 	if (n < 0) {
-		&eof = 1;
-		sha1_finish( &ctx, output);
+		sha1_finish( &ctx, state);
 	} else {
-		int mem_start = 0;
-		memcpy(ctx, &output, sizeof(ctx->total));
-		mem_start = sizeof(ctx->total);
-		memcpy(&ctx + mem_start, &output + mem_start, sizeof(ctx->state));
-		mem_start += sizeof(ctx->state);
-		memcpy(&ctx + mem_start, &output + mem_start, sizeof(ctx->buffer));
-		mem_start += sizeof(ctx->buffer);
-		memcpy(&ctx + mem_start, &output + mem_start, sizeof(ctx->ipad));
-		mem_start += sizeof(ctx->ipad);
-		memcpy(&ctx + mem_start, &output + mem_start, sizeof(ctx->opad));
+		serialize_context(&ctx, state);
 	}
-
 
 	if( ferror( f ) != 0 )
 	{

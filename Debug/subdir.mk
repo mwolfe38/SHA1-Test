@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../sha.c \
-../sha1.c 
+../sha1.c \
+../sha_parts.c 
 
 OBJS += \
 ./sha.o \
-./sha1.o 
+./sha1.o \
+./sha_parts.o 
 
 C_DEPS += \
 ./sha.d \
-./sha1.d 
+./sha1.d \
+./sha_parts.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

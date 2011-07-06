@@ -89,7 +89,14 @@ void sha1( const unsigned char *input, size_t ilen, unsigned char output[20] );
  * \return         0 if successful, 1 if fopen failed,
  *                 or 2 if fread failed
  */
-int sha1_file( const char *path, unsigned char output[20] );
+#define SHA_STATE_SIZE 28
+int sha1_file( const char *path, unsigned char output[SHA_STATE_SIZE] );
+int sha1_file_progressive(const char *path, int startByte, int totalBytes,
+		unsigned char state[SHA_STATE_SIZE], int * eof );
+
+void deserialize_context(unsigned char state[SHA_STATE_SIZE], sha1_context *ctx);
+void serialize_context(sha1_context *ctx, unsigned char state[SHA_STATE_SIZE]);
+char* byte_to_hex(char * in,int len);
 
 /**
  * \brief          SHA-1 HMAC context setup

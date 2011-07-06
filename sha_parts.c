@@ -32,18 +32,7 @@
  */
 void usage();
 
-char* byte_to_hex(char * in,int len) {
-	int j;
-	char * result;
-	result = (char*) malloc(sizeof(char) * (len * 2 + 1));
-	char hexval[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-	for(j = 0; j < len; j++){
-		result[j*2] = hexval[((in[j] >> 4) & 0xF)];
-		result[(j*2) + 1] = hexval[(in[j]) & 0x0F];
-	}
-	result[len * 2] = '\0';
-	return result;
-}
+
 /*
  *  main
  *
@@ -66,10 +55,6 @@ char* byte_to_hex(char * in,int len) {
 int main(int argc, char *argv[])
 {
     int i;   /* Counter */
-    int blockSize;
-    int blockNumber = 0;
-
-
     /*
      *  Check the program arguments and print usage information if -?
      *  or --help is passed as the first argument.
@@ -86,10 +71,8 @@ int main(int argc, char *argv[])
     	return 0;
     }
 
-    char* blockSizeStr = argv[1];
 
-    blockSize = strtol(blockSizeStr, NULL, 10);
-
+    int block_size = strtol(argv[1], NULL, 10);
 
     /*
      *  For each filename passed in on the command line, calculate the
@@ -98,16 +81,28 @@ int main(int argc, char *argv[])
     for(i = 2; i < argc; i++)
     {
 
-       char sha_result[20];
+       unsigned char sha_result[SHA_STATE_SIZE];
+
        //sha1_file(argv[i], sha_result);
-       printf("Computing sha1 in %d byte blocks for file %s\n", blockSize, argv[i]);
+       printf("Computing sha1 in %d byte blocks for file %s\n", block_size, argv[i]);
         /*
          *  Reset the SHA-1 context and process input
          */
 
 
-       //char * result_hex = byte_to_hex(sha_result, 20);
-       //printf( "%s - %s\n", result_hex, argv[i]);
+       int bytes_processed = 0;
+       int total_bytes_processed = 0;
+       int finished = 0;
+       while(!finished) {
+    	   sha1_file_progressive(argv[i], total_bytes_processed, block_size, sha_result, &bytes_processed);
+    	   finished = bytes_processed < 1;
+    	   char * result_hex = byte_to_hex(sha_result, SHA_STATE_SIZE);
+    	   printf( "Result for up to byte %d is: %s from file %s\n", total_bytes_processed, result_hex, argv[i]);
+    	   total_bytes_processed += bytes_processed;
+       }
+
+       char * result_hex = byte_to_hex(sha_result, 20);
+       printf( "%s - %s\n", result_hex, argv[i]);
 
     }
 
