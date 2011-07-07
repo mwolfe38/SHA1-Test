@@ -1,0 +1,46 @@
+/*
+ * test.c
+ *
+ *  Created on: Jul 7, 2011
+ *      Author: mwolfe
+ */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#ifdef WIN32
+#include <io.h>
+#endif
+#include <fcntl.h>
+#include "sha1.h"
+
+static const unsigned char sha1_test_sum[3][20] =
+{
+    { 0xA9, 0x99, 0x3E, 0x36, 0x47, 0x06, 0x81, 0x6A, 0xBA, 0x3E,
+      0x25, 0x71, 0x78, 0x50, 0xC2, 0x6C, 0x9C, 0xD0, 0xD8, 0x9D },
+    { 0x84, 0x98, 0x3E, 0x44, 0x1C, 0x3B, 0xD2, 0x6E, 0xBA, 0xAE,
+      0x4A, 0xA1, 0xF9, 0x51, 0x29, 0xE5, 0xE5, 0x46, 0x70, 0xF1 },
+    { 0x34, 0xAA, 0x97, 0x3C, 0xD4, 0xC4, 0xDA, 0xA4, 0xF6, 0x1E,
+      0xEB, 0x2B, 0xDB, 0xAD, 0x27, 0x31, 0x65, 0x34, 0x01, 0x6F }
+	};
+static const char sha_test_sum_hex[] = "a9993e364706816aba3e25717850c26c9cd0d89d";
+int test_bytes_to_hex() {
+	char * result1 = byte_to_hex(sha1_test_sum[0], 20);
+	printf("Result: %s\n", result1);
+	return 0;
+}
+
+int test_hex_to_bytes() {
+	char result[20];
+	hex_to_byte(sha_test_sum_hex, result);
+	char * newresult = byte_to_hex(result, 20);
+	printf("Result: %s\n", newresult);
+	return 0;
+}
+
+int main(int argc, char *argv[]) {
+
+	test_bytes_to_hex();
+	test_hex_to_bytes();
+	return 0;
+}

@@ -81,19 +81,29 @@ int main(int argc, char *argv[]) {
     {
 
        unsigned char sha_result[SHA_STATE_SIZE];
+       unsigned char sha_result_backup[SHA_STATE_SIZE];
 
        //sha1_file(argv[i], sha_result);
        printf("Computing sha1 in %d byte blocks for file %s\n", block_size, argv[i]);
-        /*
-         *  Reset the SHA-1 context and process input
-         */
-
-
+       /*
+        *  Reset the SHA-1 context and process input
+        */
        int bytes_processed = 0;
        int total_bytes_processed = 0;
        int finished = 0;
+
        while(!finished) {
     	   sha1_file_progressive(argv[i], total_bytes_processed, block_size, sha_result, &bytes_processed);
+
+    	   char * result_hex = byte_to_hex(sha_result, SHA_STATE_SIZE);
+    	   printf("Interm result: %s\n", result_hex);
+    	   hex_to_byte(result_hex, sha_result_backup);
+    	   int diff = memcmp(sha_result, sha_result_backup, SHA_STATE_SIZE);
+    	   if (diff != 0) {
+    		   char* backup = byte_to_hex(sha_result_backup, SHA_STATE_SIZE);
+    		   printf("hex to byte failed, before:\n%s\nafter:\n%s\n", result_hex, backup);
+    	   }
+
     	   finished = bytes_processed < block_size;
     	   total_bytes_processed += bytes_processed;
        }

@@ -97,7 +97,7 @@ int sha1_file_progressive(const char *path, int startByte, int totalBytes,
 void deserialize_context(unsigned char state[SHA_STATE_SIZE], sha1_context *ctx);
 void serialize_context(sha1_context *ctx, unsigned char state[SHA_STATE_SIZE]);
 char* byte_to_hex(unsigned char * in,int len);
-
+int hex_to_byte(char* hex, char *  output);
 
 
 #ifdef __cplusplus

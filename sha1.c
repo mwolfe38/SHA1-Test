@@ -386,10 +386,22 @@ char* byte_to_hex(unsigned char * in,int len) {
 	char hexval[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 	for(j = 0; j < len ; j++){
 		result[j*2] = hexval[((in[j] >> 4) & 0xF)];
-		result[(j*2) + 1] = hexval[(in[j]) & 0x0F];
+		result[(j*2) + 1] = hexval[(in[j]) & 0xF];
 	}
 	result[len * 2] = '\0';
 	return result;
+}
+
+int hex_to_byte(char hex[], char * output) {
+	int len = strlen(hex);
+	unsigned int u;
+	if (len % 2 == 1) return 1;
+	int j;
+	for (j = 0; j < len; j+=2) {
+		sscanf(hex+j, "%2x", &u);
+		*output++ = u;
+	}
+	return 0;
 }
 
 int sha1_file_progressive(const char *path, int start_byte, int block_size,
