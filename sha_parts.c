@@ -52,8 +52,7 @@ void usage();
  *  Comments:
  *
  */
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int i;   /* Counter */
     /*
      *  Check the program arguments and print usage information if -?
@@ -95,14 +94,17 @@ int main(int argc, char *argv[])
        int finished = 0;
        while(!finished) {
     	   sha1_file_progressive(argv[i], total_bytes_processed, block_size, sha_result, &bytes_processed);
-    	   finished = bytes_processed < 1;
+    	   finished = bytes_processed < block_size;
     	   char * result_hex = byte_to_hex(sha_result, SHA_STATE_SIZE);
-    	   printf( "Result for up to byte %d is: %s from file %s\n", total_bytes_processed, result_hex, argv[i]);
+    	   printf("Bytes Processed: %d, Total Processed: %d\n", bytes_processed, total_bytes_processed);
+    	   printf( "Current result is: %s\n", result_hex);
+    	   free(result_hex);
     	   total_bytes_processed += bytes_processed;
        }
-
+       printf("And we are finished, computing final result\n");
        char * result_hex = byte_to_hex(sha_result, 20);
        printf( "%s - %s\n", result_hex, argv[i]);
+       free(result_hex);
 
     }
 

@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -ggdb
 SOURCES = sha1.c
 OBJECTS = sha1.o
 
