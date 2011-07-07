@@ -377,14 +377,9 @@ void deserialize_context(unsigned char state[SHA_STATE_SIZE], sha1_context *ctx)
 	int mem_start = 0;
 	memcpy(&(ctx->total), state, sizeof(ctx->total));
 	mem_start = sizeof(ctx->total);
-	char* test;
-	test = byte_to_hex(state, SHA_STATE_SIZE);
-	printf("deserialize value is: %s\n", test);
-	test = byte_to_hex((state + mem_start), sizeof(ctx->state));
-	printf("deserialize ctx->state is: %s\n", test);
 	memcpy(&(ctx->state), (state + mem_start), sizeof(ctx->state));
 }
-char* byte_to_hex(char * in,int len) {
+char* byte_to_hex(unsigned char * in,int len) {
 	int j;
 	char * result;
 	result = (char*) malloc(sizeof(char) * (len * 2 + 1));
@@ -404,20 +399,13 @@ int sha1_file_progressive(const char *path, int start_byte, int block_size,
 	sha1_context ctx;
 	int bytes_read = 0;
 	unsigned char buf[1024];
-	char * bytes_hex1;
-	int sha1_context_size = sizeof(sha1_context);
-
 	if( ( f = fopen( path, "rb" ) ) == NULL )
 		return( 1 );
 
 	if (start_byte == 0) {
 		sha1_starts(&ctx);
 	} else {
-		printf("fseeking to byte %d\n", start_byte);
 		deserialize_context(state, &ctx);
-		bytes_hex1 = byte_to_hex(ctx.state, sizeof(ctx.state));
-		printf("Before, Context state: %s | Total: %d %d\n", bytes_hex1, ctx.total[0], ctx.total[1]);
-		free(bytes_hex1);
 		int seek_ret = fseek(f, start_byte, SEEK_SET);
 		if (seek_ret != 0) {
 			printf("there was an error trying to fseek. ERRNO: %d", seek_ret);
@@ -425,13 +413,9 @@ int sha1_file_progressive(const char *path, int start_byte, int block_size,
 	}
 
 	while(bytes_read < block_size && ((n = fread(buf, 1, sizeof(buf), f)) > 0)) {
-		printf("Read %d bytes\n", n);
 		bytes_read += n;
 		sha1_update(&ctx, buf, n);
 	}
-	bytes_hex1 = byte_to_hex(ctx.state, sizeof(ctx.state));
-	printf("After, Context state: %s | Total: %d %d\n", bytes_hex1, ctx.total[0], ctx.total[1]);
-	free(bytes_hex1);
 	*bytes_processed = bytes_read;
 	if (n <= 0) {
 		sha1_finish(&ctx, state);

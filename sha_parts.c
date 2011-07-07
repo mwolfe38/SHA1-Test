@@ -95,13 +95,8 @@ int main(int argc, char *argv[]) {
        while(!finished) {
     	   sha1_file_progressive(argv[i], total_bytes_processed, block_size, sha_result, &bytes_processed);
     	   finished = bytes_processed < block_size;
-    	   char * result_hex = byte_to_hex(sha_result, SHA_STATE_SIZE);
-    	   printf("Bytes Processed: %d, Total Processed: %d\n", bytes_processed, total_bytes_processed);
-    	   printf( "Current result is: %s\n", result_hex);
-    	   free(result_hex);
     	   total_bytes_processed += bytes_processed;
        }
-       printf("And we are finished, computing final result\n");
        char * result_hex = byte_to_hex(sha_result, 20);
        printf( "%s - %s\n", result_hex, argv[i]);
        free(result_hex);

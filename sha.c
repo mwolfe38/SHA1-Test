@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
         }
 
 
-       char sha_result[20];
+       unsigned char sha_result[20];
        sha1_file(argv[i], sha_result);
         /*
          *  Reset the SHA-1 context and process input
